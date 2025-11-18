@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Нарды</title>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #8b5e3c;
+    margin: 0;
+    font-family: sans-serif;
+  }
+
+  .backgammon-board {
+    display: grid;
+    grid-template-columns: repeat(12, 80px);
+    grid-template-rows: repeat(2, 200px);
+    gap: 0;
+    border: 4px solid #333;
+    background-color: #f5deb3;
+    position: relative;
+  }
+
+  .point {
+    position: relative;
+    width: 80px;
+    height: 200px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+  }
+
+  .point:nth-child(odd) {
+    background-color: #d2691e;
+  }
+
+  .checker {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: pointer;
+    transition: top 0.2s;
+    border: 2px solid #000;
+  }
+
+  .white { background-color: #fff; }
+  .black { background-color: #000; }
+
+</style>
+</head>
+<body>
+
+<div class="backgammon-board" id="board"></div>
+
+<script>
+const board = document.getElementById('board');
+
+// Создаем 24 точки на доске
+const points = [];
+for (let i = 0; i < 24; i++) {
+  const point = document.createElement('div');
+  point.classList.add('point');
+  point.dataset.index = i;
+  board.appendChild(point);
+  points.push(point);
+}
+
+// Начальная расстановка шашек (упрощённая)
+const checkers = [
+  { color: 'white', position: 0, count: 2 },
+  { color: 'white', position: 11, count: 5 },
+  { color: 'white', position: 16, count: 3 },
+  { color: 'white', position: 18, count: 5 },
+  { color: 'black', position: 23, count: 2 },
+  { color: 'black', position: 12, count: 5 },
+  { color: 'black', position: 7, count: 3 },
+  { color: 'black', position: 5, count: 5 }
+];
+
+const allCheckers = [];
+
+checkers.forEach(group => {
+  for (let i = 0; i < group.count; i++) {
+    const checker = document.createElement('div');
+    checker.classList.add('checker', group.color);
+    checker.dataset.color = group.color;
+    checker.dataset.position = group.position;
+    allCheckers.push(checker);
+    points[group.position].appendChild(checker);
+    updateCheckerPosition(group.position, checker);
+  }
+});
+
+// Перемещение шашек
+let selectedChecker = null;
+
+function updateCheckerPosition(position, checker) {
+  const index = [...checker.parentElement.children].indexOf(checker);
+  if (checker.dataset.color === 'white') {
+    checker.style.top = (index * 60) + 'px';
+  } else {
+    checker.style.top = (200 - 60 * (index + 1)) + 'px';
+  }
+}
+
+allCheckers.forEach(checker => {
+  checker.addEventListener('click', e => {
+    e.stopPropagation();
+    if (selectedChecker === checker) {
+      selectedChecker = null;
+      checker.style.outline = '';
+    } else {
+      if (selectedChecker) selectedChecker.style.outline = '';
+      selectedChecker = checker;
+      checker.style.outline = '3px solid yellow';
+    }
+  });
+});
+
+points.forEach(point => {
+  point.addEventListener('click', () => {
+    if (selectedChecker) {
+      point.appendChild(selectedChecker);
+      selectedChecker.dataset.position = point.dataset.index;
+      updateCheckerPosition(point.dataset.index, selectedChecker);
+      selectedChecker.style.outline = '';
+      selectedChecker = null;
+    }
+  });
+});
+</script>
+
+</body>
+</html>
+
